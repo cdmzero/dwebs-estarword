@@ -1,0 +1,75 @@
+# Obteniendo tokens para cada rol
+
+## Admin
+curl -s -X POST http://127.0.0.1:8000/api/auth/tokens \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password"}'
+
+## Manager
+curl -s -X POST http://127.0.0.1:8000/api/auth/tokens \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"manager@example.com","password":"password"}'
+
+## User
+curl -s -X POST http://127.0.0.1:8000/api/auth/tokens \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# Guarda cada token en una variable de entorno (ejemplo)
+# export ADMIN_TOKEN="<token_admin>"
+# export MANAGER_TOKEN="<token_manager>"
+# export USER_TOKEN="<token_user>"
+
+# Pruebas de habilidades
+
+## Listar naves (user/manager/admin deberían poder)
+curl -i http://127.0.0.1:8000/api/naves \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $USER_TOKEN"
+
+## Crear nave (solo admin)
+curl -i -X POST http://127.0.0.1:8000/api/naves \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"planet_id":1,"name":"Test Ship","model":"Prototype","crew":2,"passengers":4,"type":"cargo"}'
+
+## Intento de crear nave con manager (debe dar 403)
+curl -i -X POST http://127.0.0.1:8000/api/naves \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $MANAGER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"planet_id":1,"name":"Fail Ship","model":"Nope","crew":2,"passengers":3,"type":"cargo"}'
+
+## Registrar mantenimiento (manager y admin)
+curl -i -X POST http://127.0.0.1:8000/api/naves/1/maintenances \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $MANAGER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"date_planned":"2026-02-01 09:00:00","description":"Chequeo de rutina","cost":700}'
+
+## Registrar mantenimiento con user (debe dar 403)
+curl -i -X POST http://127.0.0.1:8000/api/naves/1/maintenances \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"date_planned":"2026-03-01 10:00:00","description":"Intento fallido","cost":500}'
+
+## Listar mantenimientos (user/manager/admin)
+curl -i http://127.0.0.1:8000/api/naves/1/maintenances \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $USER_TOKEN"
+
+## Eliminar nave (solo admin)
+curl -s -X DELETE http://127.0.0.1:8000/api/naves/1 \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+Subir imagen de usuario como admin (requiere setear CLOUDINARY_*)
+curl -s -X POST http://127.0.0.1:8000/api/users/1/image \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -F "image=@/ruta/a/tu/imagen.jpg"

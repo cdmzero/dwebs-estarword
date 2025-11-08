@@ -1,0 +1,62 @@
+Base URL (ajusta si usas otro puerto): http://localhost/api
+
+Obtener token para un usuario (admin/manager/user)
+curl -s -X POST http://127.0.0.1:8000/api/auth/tokens \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password","device_name":"cli"}'
+
+# Copia el valor de "token" de la respuesta en una variable de entorno para reutilizarlo:
+# export TOKEN="eyJ0eXAiOiJKV1QiLCJh..."
+
+Listar todas las naves
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/naves
+
+Crear una nave (ejemplo)
+curl -s -X POST http://127.0.0.1:8000/api/naves \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"planet_id":1,"name":"X-Wing","model":"T-65","crew":1,"passengers":0,"type":"Starfighter"}'
+
+Ver detalle de una nave
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/naves/1
+
+Actualizar una nave (PATCH)
+curl -s -X PATCH http://127.0.0.1:8000/api/naves/1 \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"X-Wing Modificado"}'
+
+Eliminar una nave
+curl -s -X DELETE -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/naves/1
+
+Registrar un mantenimiento para una nave
+curl -s -X POST http://127.0.0.1:8000/api/naves/1/maintenances \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"date_planned":"2025-12-01 10:00:00","description":"Revisión de motores","cost":1234.56}'
+
+Listar mantenimientos de una nave
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/naves/1/maintenances | jq
+
+Listar mantenimientos en rango de fechas
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:8000/api/lists/maintenances/by-dates?start=2025-01-01&end=2025-12-31" | jq
+
+Listar todas las listas
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/lists
+
+Listar elementos de una lista concreta (ej. planetas)
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/lists/planets
+
+Listar registro concreto de una lista
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/lists/planets/1
+
+Listar naves sin piloto
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/lists/spaceships/without-pilot
+
+Listar histórico de asignaciones de pilotos
+curl -s -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/lists/pilots/assigned-history
+

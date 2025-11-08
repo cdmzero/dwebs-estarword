@@ -1,0 +1,89 @@
+Para crear el proyecto de Laravel.
+- composer create-project laravel/laravel estarword-project
+
+Para probar que funciona todo.
+- php artisan serve
+
+Crear base de datos sqlite
+- touch database/database.sqlite
+
+Crear modelos y migraciones
+
+php artisan make:model Planet -m
+php artisan make:model Spaceship -m
+php artisan make:model Pilot -m
+php artisan make:model Maintenance -m
+php artisan make:model SpaceshipPilot
+php artisan make:migration create_spaceship_pilots_table --create=spaceship_pilots
+
+Crea las migraciones
+
+- cd /database/migrations
+
+❯ touch create_planets_table.php
+❯ touch create_spaceships_table.php
+❯ touch create_pilots_table.php
+❯ touch create_maintenances_table.php
+❯ touch create_spaceship_pilots_table.php
+
+
+Populamos los ficheros con los campos necesarios para cada tabla de modelo.
+
+
+cd - && cd app/Models
+
+Populamos los modelos con sus atributos/campos 
+
+
+php artisan migrate:fresh
+
+Registrar un mantenimiento por API
+- Levanta el servidor: php artisan serve --host=127.0.0.1 --port=8000
+- Envía un POST a /api/naves/{id}/maintenances con JSON, por ejemplo:
+  curl -s -X POST http://127.0.0.1:8000/api/naves/1/maintenances \
+    -H "Accept: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"date_planned":"2025-12-01 10:00:00","description":"Revisión de motores","cost":1234.56}'
+
+Consultar mantenimientos de una nave
+- GET /api/naves/{id}/maintenances
+- Ejemplo:
+  curl -s -H "Accept: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    http://127.0.0.1:8000/api/naves/1/maintenances | jq
+
+Listar naves con mantenimientos en un rango
+- GET /api/lists/maintenances/by-dates?start=YYYY-MM-DD&end=YYYY-MM-DD
+- Ejemplo:
+  curl -s -H "Accept: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    "http://127.0.0.1:8000/api/lists/maintenances/by-dates?start=2025-01-01&end=2025-12-31" | jq
+
+# Autenticación con Sanctum
+- Generar token personal:
+  curl -s -X POST http://127.0.0.1:8000/api/auth/tokens \
+    -H "Accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"admin@example.com","password":"password"}'
+- Guarda el campo "token" y úsalo como `Authorization: Bearer <token>` para las llamadas siguientes.
+- Roles sembrados de ejemplo: admin@example.com, manager@example.com, user@example.com (todos con password `password`).
+- Habilidades por rol:
+  - admin → admin (acceso total)
+  - manager → manager (mantenimientos + listados)
+  - user → user (solo lectura listados)
+- Las habilidades se almacenan en la tabla `abilities` (migración `create_abilities_table`).
+  Ajusta los permisos editando esa tabla o actualizando el seeder antes de ejecutar `php artisan db:seed`.
+- Para la subida de imágenes de usuarios, configura Cloudinary en tu `.env`:
+  - `CLOUDINARY_URL`
+  - `CLOUDINARY_KEY`
+  - `CLOUDINARY_SECRET`
+  - `CLOUDINARY_CLOUD_NAME`
+- Los pilotos tienen una imagen por defecto (`public/images/default_pilot.png`).
+  Tras la migración `add_image_url_to_pilots_table`, puedes actualizarla en el seeder o subir una personalizada si implementas un endpoint.
+
+No hay una relación directa en base de datos entre abilities y personal_access_tokens. Lo que ocurre es:
+Al loguearse un usuario, buscamos en abilities el registro cuyo role coincide con el role del usuario (por ejemplo manager → ["maintainer","viewer"]).
+Esas habilidades se pasan como array a createToken('api-token', $abilities).
+Sanctum guarda ese array directamente en el campo personal_access_tokens.abilities (como JSON serializado).
+Así, el token sabe qué habilidades tiene, pero no apunta mediante clave foránea a abilities; simplemente almacena la lista resultante en su propio registro.
