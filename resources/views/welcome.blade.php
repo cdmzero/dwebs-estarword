@@ -114,7 +114,7 @@
                             </tbody>
                         </table>
                         <p class="mt-3 text-[12px] text-[#706f6c] dark:text-[#A1A09A]">
-
+                            Si aparece un aviso de mala configuración por variables de entorno, pega los valores necesarios en <code>.env.example</code> y vuelve a ejecutar <code>./setup.sh</code>.
                         </p>
                     </div>
                 </div>

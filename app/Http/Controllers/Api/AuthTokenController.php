@@ -50,4 +50,11 @@ class AuthTokenController extends Controller
             'message' => 'Token revocado',
         ]);
     }
+
+    public function nologin(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'No autenticado',
+        ], 401);
+    }
 }

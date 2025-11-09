@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\UserImageController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('auth/tokens', [AuthTokenController::class, 'store']);
+Route::any('nologin', [AuthTokenController::class, 'nologin'])->name('api.nologin');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthTokenController::class, 'destroy']);

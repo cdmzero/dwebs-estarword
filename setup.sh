@@ -125,6 +125,9 @@ action_test_api() {
   log "Ejecutando pruebas unitarias de mantenimiento"
   php artisan test --filter=MaintenanceTest
 
+  log "Ejecutando pruebas del endpoint nologin"
+  php artisan test --filter=NologinEndpointTest
+
   log "Ejecutando pruebas funcionales de API"
   php artisan test --filter=ApiCrudTest
 }
